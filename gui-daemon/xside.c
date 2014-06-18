@@ -1517,6 +1517,8 @@ static inline uint32_t flags_from_atom(Ghandles * g, Atom a) {
 		return WINDOW_FLAG_FULLSCREEN;
 	else if (a == g->wm_state_demands_attention)
 		return WINDOW_FLAG_DEMANDS_ATTENTION;
+	else if (a == XInternAtom(g->display, "_NET_WM_STATE_HIDDEN", False))
+		return (1<<2); // TODO: WINDOW_FLAG_MINIMIZE
 	else {
 		/* ignore unsupported states */
 	}
@@ -2104,6 +2106,8 @@ static void handle_wmflags(Ghandles * g, struct windowdata *vm_window)
 			/* no change requested */
 			return;
 
+		// TODO: WINDOW_FLAG_FULLSCREEN and WINDOW_FLAG_MINIMIZE are mutually exclusive
+
 		memset(&ev, 0, sizeof(ev));
 		ev.type = ClientMessage;
 		ev.display = g->display;
@@ -2130,6 +2134,13 @@ static void handle_wmflags(Ghandles * g, struct windowdata *vm_window)
 			ev.data.l[0] = (msg.flags_set & WINDOW_FLAG_DEMANDS_ATTENTION) ? 1 : 0;
 			ev.data.l[1] = g->wm_state_demands_attention;
 			ev.data.l[2] = 0;
+			XSendEvent(g->display, g->root_win, False,
+					(SubstructureNotifyMask|SubstructureRedirectMask),
+					(XEvent*) &ev);
+		}
+		if (msg.flags_set & (1<<2)) { // TODO: WINDOW_FLAG_MINIMIZE
+			ev.message_type = XInternAtom(g->display, "WM_CHANGE_STATE", False);
+			ev.data.l[0] = IconicState;
 			XSendEvent(g->display, g->root_win, False,
 					(SubstructureNotifyMask|SubstructureRedirectMask),
 					(XEvent*) &ev);
