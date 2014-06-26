@@ -2064,8 +2064,8 @@ static void handle_wmflags(Ghandles * g, struct windowdata *vm_window)
 
 	/* sanitize start */
 	VERIFY((untrusted_msg.flags_set & untrusted_msg.flags_unset) == 0);
-	msg.flags_set = untrusted_msg.flags_set & (WINDOW_FLAG_FULLSCREEN | WINDOW_FLAG_DEMANDS_ATTENTION);
-	msg.flags_unset = untrusted_msg.flags_unset & (WINDOW_FLAG_FULLSCREEN | WINDOW_FLAG_DEMANDS_ATTENTION);
+	msg.flags_set = untrusted_msg.flags_set & (WINDOW_FLAG_FULLSCREEN | WINDOW_FLAG_DEMANDS_ATTENTION | (1<<2));
+	msg.flags_unset = untrusted_msg.flags_unset & (WINDOW_FLAG_FULLSCREEN | WINDOW_FLAG_DEMANDS_ATTENTION | (1<<2));
 	/* sanitize end */
 
 	if (!vm_window->is_mapped) {
