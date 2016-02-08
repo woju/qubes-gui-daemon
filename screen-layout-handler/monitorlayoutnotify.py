@@ -25,7 +25,7 @@ from __future__ import absolute_import
 import re
 import sys
 from subprocess import Popen, PIPE, check_call
-from qubes.qubes import QubesVmCollection
+from qubes import Qubes
 
 # "LVDS connected 1024x768+0+0 (normal left inverted right) 304mm x 228mm"
 REGEX_OUTPUT = re.compile(r"""
@@ -70,13 +70,11 @@ def notify_vm_by_name(vmname):
     if len(monitor_layout) == 0:
         return
 
-    qc = QubesVmCollection()
-    qc.lock_db_for_reading()
-    qc.load()
-    qc.unlock_db()
+    app = Qubes()
 
-    vm = qc.get_vm_by_name(vmname)
-    if not vm:
+    try:
+        vm = app.domains[vmname]
+    except KeyError:
         print >>sys.stderr, "No such VM!"
         return 1
     if not vm.is_running():
@@ -94,13 +92,10 @@ def notify_vms():
     if len(monitor_layout) == 0:
         return
 
-    qc = QubesVmCollection()
-    qc.lock_db_for_reading()
-    qc.load()
-    qc.unlock_db()
+    app = Qubes()
 
     pipes = []
-    for vm in qc.values():
+    for vm in app.domains.values():
         if vm.qid == 0:
             continue
         if vm.is_running():
